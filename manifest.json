@@ -1,0 +1,22 @@
+{
+    "name": "산성비 최소공배수 게임",
+    "short_name": "최소공배수",
+    "start_url": "/11/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "icons": [
+        {
+            "src": "https://i.ibb.co/NnWpMGpP/maskable-icon-x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://i.ibb.co/TBbbB7Wz/maskable-icon-x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
