@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>산성비 최소공배수 게임</title>
+  <style>
+    body {
+      font-family: 'Nanum Gothic', sans-serif;
+      background-color: #1e3a5f;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      background-color: #0f1c2e;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      z-index: 10;
+    }
+    
+    .game-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .number-pair {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      animation: fall linear;
+    }
+    
+    .number {
+      background-color: rgba(52, 152, 219, 0.8);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 18px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    @keyframes fall {
+      0% {
+        transform: translateY(-50px);
+      }
+      100% {
+        transform: translateY(100vh);
+      }
+    }
+    
+    .input-area {
+      background-color: #0f1c2e;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+    }
+    
+    input {
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      width: 150px;
+    }
+    
+    button {
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #27ae60;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      color: white;
+      background-color: #0f1c2e;
+      padding: 10px;
+      z-index: 10;
+    }
+    
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .timer-label {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    
+    .timer {
+      font-size: 28px;
+      font-weight: bold;
+      color: #f39c12;
+    }
+    
+    .hearts-container {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .heart {
+      color: #e74c3c;
+      font-size: 24px;
+    }
+    
+    .heart.empty {
+      color: #7f8c8d;
+    }
+    
+    .game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 100;
+      display: none;
+    }
+    
+    .game-over h2 {
+      color: #e74c3c;
+      margin-bottom: 20px;
+    }
+    
+    .game-over button {
+      margin-top: 20px;
+      background-color: #3498db;
+      padding: 12px 25px;
+      font-size: 18px;
+    }
+    
+    .correct-flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(46, 204, 113, 0.3);
+      z-index: 5;
+      pointer-events: none;
+      animation: flash 0.5s;
+    }
+    
+    @keyframes flash {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+    
+    .level-selector {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    
+    .level-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    .level-btn.active {
+      background-color: #e74c3c;
+    }
+    
+    .start-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(14, 36, 63, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+    
+    .start-screen h2 {
+      color: white;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+    
+    .difficulty-container {
+      background-color: #0f1c2e;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      width: 80%;
+      max-width: 500px;
+    }
+    
+    .difficulty-title {
+      color: white;
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+    
+    .difficulty-options {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 15px;
+    }
+    
+    .difficulty-option {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    
+    .difficulty-option:hover {
+      transform: translateY(-3px);
+    }
+    
+    .difficulty-option.selected {
+      background-color: #e74c3c;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .difficulty-info {
+      color: #bdc3c7;
+      text-align: center;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+    
+    .start-btn {
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 20px;
+      transition: all 0.3s;
+    }
+    
+    .start-btn:hover {
+      background-color: #27ae60;
+      transform: scale(1.05);
+    }
+    
+    .game-paused {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 90;
+      display: none;
+    }
+    
+    .game-paused h2 {
+      color: #3498db;
+      margin-bottom: 20px;
+    }
+    
+    .pause-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 20;
+    }
+    
+    @keyframes heartBeat {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    .heart.lost {
+      animation: heartBeat 0.5s;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>산성비 최소공배수 게임</h1>
+    <p>내려오는 두 수의 최소공배수를 빠르게 입력하세요!</p>
+  </div>
+  
+  <div class="game-container" id="game-container">
+    <button class="pause-btn" id="pause-btn">II</button>
+  </div>
+  
+  <div class="input-area">
+    <input type="number" id="answer-input" placeholder="최소공배수 입력">
+    <button id="submit-btn">제출</button>
+  </div>
+  
+  <div class="stats">
+    <div>점수: <span id="score">0</span></div>
+    <div>레벨: <span id="level">1</span></div>
+    
+    <div class="hearts-container" id="hearts-container">
+      <span class="heart">❤️</span>
+      <span class="heart">❤️</span>
+      <span class="heart">❤️</span>
+    </div>
+    
+    <div class="timer-container">
+      <div class="timer-label">남은 시간</div>
+      <div class="timer" id="time">60</div>
+    </div>
+  </div>
+  
+  <div class="start-screen" id="start-screen">
+    <h2>산성비 최소공배수 게임</h2>
+    
+    <div class="difficulty-container">
+      <div class="difficulty-title">난이도 선택</div>
+      <div class="difficulty-options">
+        <button class="difficulty-option selected" data-difficulty="easy">쉬움</button>
+        <button class="difficulty-option" data-difficulty="medium">보통</button>
+        <button class="difficulty-option" data-difficulty="hard">어려움</button>
+      </div>
+      <div class="difficulty-info" id="difficulty-info">
+        숫자 범위: 1~12, 속도: 느림, 최대 쌍: 5개
+      </div>
+    </div>
+    
+    <button class="start-btn" id="start-btn">게임 시작</button>
+  </div>
+  
+  <div class="game-over" id="game-over">
+    <h2>게임 오버!</h2>
+    <p>최종 점수: <span id="final-score">0</span></p>
+    <p>최고 레벨: <span id="final-level">1</span></p>
+    <button id="restart-btn">다시 시작</button>
+  </div>
+  
+  <div class="game-paused" id="game-paused">
+    <h2>게임 일시 정지</h2>
+    <button id="resume-btn">계속하기</button>
+    <button id="quit-btn" style="background-color: #e74c3c; margin-top: 10px;">게임 종료</button>
+  </div>
+
+  <script>
+    // 게임 상태
+    const gameState = {
+      score: 0,
+      level: 1,
+      lives: 3,
+      timeLeft: 60,
+      timer: null,
+      spawnTimer: null,
+      numberPairs: [],
+      gameOver: false,
+      gamePaused: false,
+      gameStarted: false,
+      spawnInterval: 3000, // 초기 생성 간격 (ms)
+      fallSpeed: 15, // 초기 낙하 속도 (초)
+      difficulty: 'easy', // 난이도: easy, medium, hard
+      maxPairs: 5, // 화면에 동시에 표시될 수 있는 최대 쌍 수
+    };
+    
+    // DOM 요소
+    const gameContainer = document.getElementById('game-container');
+    const answerInput = document.getElementById('answer-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const scoreElement = document.getElementById('score');
+    const levelElement = document.getElementById('level');
+    const heartsContainer = document.getElementById('hearts-container');
+    const timeElement = document.getElementById('time');
+    const gameOverElement = document.getElementById('game-over');
+    const finalScoreElement = document.getElementById('final-score');
+    const finalLevelElement = document.getElementById('final-level');
+    const restartBtn = document.getElementById('restart-btn');
+    const startScreen = document.getElementById('start-screen');
+    const startBtn = document.getElementById('start-btn');
+    const difficultyOptions = document.querySelectorAll('.difficulty-option');
+    const difficultyInfo = document.getElementById('difficulty-info');
+    const pauseBtn = document.getElementById('pause-btn');
+    const gamePausedElement = document.getElementById('game-paused');
+    const resumeBtn = document.getElementById('resume-btn');
+    const quitBtn = document.getElementById('quit-btn');
+    
+    // 최대공약수 구하는 함수 (유클리드 호제법)
+    function gcd(a, b) {
+      while (b !== 0) {
+        let temp = b;
+        b = a % b;
+        a = temp;
+      }
+      return a;
+    }
+    
+    // 최소공배수 구하는 함수
+    function lcm(a, b) {
+      return (a * b) / gcd(a, b);
+    }
+    
+    // 난이도에 따른 숫자 범위 설정
+    function getNumberRange() {
+      switch (gameState.difficulty) {
+        case 'easy':
+          return { min: 1, max: 12 };
+        case 'medium':
+          return { min: 1, max: 20 };
+        case 'hard':
+          return { min: 1, max: 30 };
+      }
+    }
+    
+    // 난이도 정보 업데이트
+    function updateDifficultyInfo() {
+      let info = '';
+      switch (gameState.difficulty) {
+        case 'easy':
+          info = '숫자 범위: 1~12, 속도: 느림, 최대 쌍: 5개';
+          break;
+        case 'medium':
+          info = '숫자 범위: 1~20, 속도: 중간, 최대 쌍: 7개';
+          break;
+        case 'hard':
+          info = '숫자 범위: 1~30, 속도: 빠름, 최대 쌍: 10개';
+          break;
+      }
+      difficultyInfo.textContent = info;
+    }
+    
+    // 하트 업데이트
+    function updateHearts() {
+      heartsContainer.innerHTML = '';
+      
+      for (let i = 0; i < 3; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'heart';
+        
+        if (i < gameState.lives) {
+          heart.textContent = '❤️';
+        } else {
+          heart.textContent = '🖤';
+          heart.classList.add('empty');
+        }
+        
+        heartsContainer.appendChild(heart);
+      }
+    }
+    
+    // 새로운 숫자 쌍 생성
+    function createNumberPair() {
+      if (gameState.gameOver || gameState.gamePaused || !gameState.gameStarted || gameState.numberPairs.length >= gameState.maxPairs) {
+        return;
+      }
+      
+      const range = getNumberRange();
+      const num1 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+      const num2 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+      const answer = lcm(num1, num2);
+      
+      // 화면 너비 내에서 랜덤한 위치 선택
+      const left = Math.random() * (gameContainer.offsetWidth - 150);
+      
+      // 숫자 쌍 요소 생성
+      const pairElement = document.createElement('div');
+      pairElement.className = 'number-pair';
+      pairElement.style.left = `${left}px`;
+      pairElement.style.top = '-50px';
+      pairElement.style.animationDuration = `${gameState.fallSpeed}s`;
+      
+      // 두 숫자 표시
+      const num1Element = document.createElement('div');
+      num1Element.className = 'number';
+      num1Element.textContent = num1;
+      
+      const num2Element = document.createElement('div');
+      num2Element.className = 'number';
+      num2Element.textContent = num2;
+      
+      pairElement.appendChild(num1Element);
+      pairElement.appendChild(num2Element);
+      
+      // 게임 컨테이너에 추가
+      gameContainer.appendChild(pairElement);
+      
+      // 숫자 쌍 정보 저장
+      const pairInfo = {
+        element: pairElement,
+        num1,
+        num2,
+        answer,
+        id: Date.now() + Math.random(),
+      };
+      
+      gameState.numberPairs.push(pairInfo);
+      
+      // 애니메이션 종료 시 처리
+      pairElement.addEventListener('animationend', () => {
+        // 아직 화면에 있는 쌍이라면 생명 감소
+        if (gameState.numberPairs.includes(pairInfo) && !gameState.gamePaused) {
+          decreaseLives();
+          removePair(pairInfo);
+        }
+      });
+    }
+    
+    // 숫자 쌍 제거
+    function removePair(pair) {
+      if (pair.element.parentNode) {
+        gameContainer.removeChild(pair.element);
+      }
+      gameState.numberPairs = gameState.numberPairs.filter(p => p.id !== pair.id);
+    }
+    
+    // 정답 확인
+    function checkAnswer() {
+      if (gameState.gameOver || gameState.gamePaused || !gameState.gameStarted) {
+        return;
+      }
+      
+      const userAnswer = parseInt(answerInput.value);
+      
+      if (isNaN(userAnswer) || userAnswer <= 0) {
+        return;
+      }
+      
+      // 모든 숫자 쌍에 대해 정답 확인
+      for (let i = 0; i < gameState.numberPairs.length; i++) {
+        const pair = gameState.numberPairs[i];
+        
+        if (userAnswer === pair.answer) {
+          // 정답 처리
+          removePair(pair);
+          increaseScore();
+          showCorrectFlash();
+          answerInput.value = '';
+          return;
+        }
+      }
+      
+      // 오답 처리
+      answerInput.value = '';
+      answerInput.classList.add('shake');
+      setTimeout(() => {
+        answerInput.classList.remove('shake');
+      }, 500);
+    }
+    
+    // 점수 증가
+    function increaseScore() {
+      gameState.score += 10 * gameState.level;
+      scoreElement.textContent = gameState.score;
+      
+      // 레벨 업 체크
+      if (gameState.score >= gameState.level * 100) {
+        levelUp();
+      }
+    }
+    
+    // 레벨 업
+    function levelUp() {
+      gameState.level++;
+      levelElement.textContent = gameState.level;
+      
+      // 난이도 증가
+      gameState.spawnInterval = Math.max(1000, gameState.spawnInterval - 300);
+      gameState.fallSpeed = Math.max(5, gameState.fallSpeed - 1);
+      
+      // 생성 간격 재설정
+      clearInterval(gameState.spawnTimer);
+      gameState.spawnTimer = setInterval(createNumberPair, gameState.spawnInterval);
+    }
+    
+    // 생명 감소
+    function decreaseLives() {
+      if (gameState.lives > 0) {
+        // 하트 애니메이션 효과
+        const heartToLose = heartsContainer.children[gameState.lives - 1];
+        heartToLose.classList.add('lost');
+        
+        setTimeout(() => {
+          gameState.lives--;
+          updateHearts();
+          
+          if (gameState.lives <= 0) {
+            endGame();
+          }
+        }, 500);
+      }
+    }
+    
+    // 정답 맞췄을 때 효과
+    function showCorrectFlash() {
+      const flash = document.createElement('div');
+      flash.className = 'correct-flash';
+      gameContainer.appendChild(flash);
+      
+      setTimeout(() => {
+        if (flash.parentNode) {
+          gameContainer.removeChild(flash);
+        }
+      }, 500);
+    }
+    
+    // 게임 일시 정지
+    function pauseGame() {
+      if (gameState.gameOver || !gameState.gameStarted) {
+        return;
+      }
+      
+      gameState.gamePaused = true;
+      
+      // 타이머 정지
+      clearInterval(gameState.timer);
+      clearInterval(gameState.spawnTimer);
+      
+      // 애니메이션 정지
+      gameState.numberPairs.forEach(pair => {
+        pair.element.style.animationPlayState = 'paused';
+      });
+      
+      // 일시 정지 화면 표시
+      gamePausedElement.style.display = 'block';
+    }
+    
+    // 게임 재개
+    function resumeGame() {
+      gameState.gamePaused = false;
+      
+      // 타이머 재개
+      gameState.timer = setInterval(() => {
+        gameState.timeLeft--;
+        timeElement.textContent = gameState.timeLeft;
+        
+        if (gameState.timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+      
+      gameState.spawnTimer = setInterval(createNumberPair, gameState.spawnInterval);
+      
+      // 애니메이션 재개
+      gameState.numberPairs.forEach(pair => {
+        pair.element.style.animationPlayState = 'running';
+      });
+      
+      // 일시 정지 화면 숨기기
+      gamePausedElement.style.display = 'none';
+    }
+    
+    // 게임 종료
+    function endGame() {
+      gameState.gameOver = true;
+      gameState.gameStarted = false;
+      clearInterval(gameState.timer);
+      clearInterval(gameState.spawnTimer);
+      
+      // 게임 오버 화면 표시
+      finalScoreElement.textContent = gameState.score;
+      finalLevelElement.textContent = gameState.level;
+      gameOverElement.style.display = 'block';
+    }
+    
+    // 게임 초기화
+    function initGame() {
+      // 게임 상태 초기화
+      gameState.score = 0;
+      gameState.level = 1;
+      gameState.lives = 3;
+      gameState.timeLeft = 60;
+      gameState.gameOver = false;
+      gameState.gamePaused = false;
+      gameState.gameStarted = true;
+      
+      // 난이도에 따른 설정
+      switch (gameState.difficulty) {
+        case 'easy':
+          gameState.spawnInterval = 3000;
+          gameState.fallSpeed = 15;
+          gameState.maxPairs = 5;
+          break;
+        case 'medium':
+          gameState.spawnInterval = 2500;
+          gameState.fallSpeed = 12;
+          gameState.maxPairs = 7;
+          break;
+        case 'hard':
+          gameState.spawnInterval = 2000;
+          gameState.fallSpeed = 10;
+          gameState.maxPairs = 10;
+          break;
+      }
+      
+      // UI 초기화
+      scoreElement.textContent = gameState.score;
+      levelElement.textContent = gameState.level;
+      updateHearts();
+      timeElement.textContent = gameState.timeLeft;
+      gameOverElement.style.display = 'none';
+      gamePausedElement.style.display = 'none';
+      
+      // 시작 화면 숨기기
+      startScreen.style.display = 'none';
+      
+      // 기존 숫자 쌍 제거
+      gameState.numberPairs.forEach(pair => {
+        if (pair.element.parentNode) {
+          gameContainer.removeChild(pair.element);
+        }
+      });
+      gameState.numberPairs = [];
+      
+      // 타이머 설정
+      if (gameState.timer) {
+        clearInterval(gameState.timer);
+      }
+      gameState.timer = setInterval(() => {
+        gameState.timeLeft--;
+        timeElement.textContent = gameState.timeLeft;
+        
+        if (gameState.timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+      
+      // 숫자 쌍 생성 타이머 설정
+      if (gameState.spawnTimer) {
+        clearInterval(gameState.spawnTimer);
+      }
+      gameState.spawnTimer = setInterval(createNumberPair, gameState.spawnInterval);
+      
+      // 첫 번째 숫자 쌍 생성
+      createNumberPair();
+      
+      // 입력 필드에 포커스
+      answerInput.focus();
+    }
+    
+    // 게임 재시작 (시작 화면으로)
+    function restartGame() {
+      gameState.gameStarted = false;
+      gameState.gameOver = false;
+      
+      // 게임 오버 화면 숨기기
+      gameOverElement.style.display = 'none';
+      
+      // 시작 화면 표시
+      startScreen.style.display = 'flex';
+    }
+    
+    // 이벤트 리스너
+    submitBtn.addEventListener('click', checkAnswer);
+    answerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        checkAnswer();
+      }
+    });
+    
+    // 시작 버튼
+    startBtn.addEventListener('click', initGame);
+    
+    // 재시작 버튼
+    restartBtn.addEventListener('click', restartGame);
+    
+    // 난이도 선택 버튼
+    difficultyOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        difficultyOptions.forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
+        gameState.difficulty = option.dataset.difficulty;
+        updateDifficultyInfo();
+      });
+    });
+    
+    // 일시 정지 버튼
+    pauseBtn.addEventListener('click', pauseGame);
+    
+    // 계속하기 버튼
+    resumeBtn.addEventListener('click', resumeGame);
+    
+    // 게임 종료 버튼 (시작 화면으로)
+    quitBtn.addEventListener('click', restartGame);
+    
+    // 창 크기 변경 시 조정
+    window.addEventListener('resize', () => {
+      // 화면 밖으로 나간 숫자 쌍 조정
+      gameState.numberPairs.forEach(pair => {
+        const left = parseInt(pair.element.style.left);
+        if (left > gameContainer.offsetWidth - 150) {
+          pair.element.style.left = `${gameContainer.offsetWidth - 150}px`;
+        }
+      });
+    });
+    
+    // 난이도 정보 초기화
+    updateDifficultyInfo();
+    
+    // 하트 초기화
+    updateHearts();
+  </script>
+</body>
+</html>
